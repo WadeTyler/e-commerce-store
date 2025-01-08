@@ -58,4 +58,6 @@ export const useUserStore = create((set, get) => ({
       toast.error(error.response?.data?.message || "An error occurred during logout.");
     }
   },
-}))
+}));
+
+// TODO: Implement the axios intercepters for refreshing the access token
