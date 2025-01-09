@@ -31,7 +31,9 @@ export const addToCart = async (req, res) => {
       existingItem.quantity += 1;
     }
 
-    user.cartItems.push(productId);
+    else {
+      user.cartItems.push(productId);
+    }
 
     await user.save();
     res.status(200).json(user.cartItems);

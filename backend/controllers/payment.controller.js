@@ -26,7 +26,8 @@ export const createCheckoutSession = async (req, res) => {
             images: [product.image],
           },
           unit_amount: amount,
-        }
+        },
+        quantity: product.quantity || 1,
       }
     });
 
@@ -43,7 +44,7 @@ export const createCheckoutSession = async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-sucess?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
       discounts: coupon
         ? [
@@ -88,6 +89,17 @@ export const checkoutSuccess = async (req, res) => {
     if (session.payment_status === "paid") {
       if (session.metadata.couponCode) {
         await Coupon.findOneAndUpdate({ code: session.metadata.couponCode, userId:session.metadata.userId }, { isActive: false });
+      }
+
+      // check if order already exists
+      const existingOrder = await Order.findOne({ stripeSessionId: sessionId });
+
+      if (existingOrder) {
+        return res.status(200).json({ 
+          success: true,
+          message: "Payment successful, but order already exists.",
+          orderId: existingOrder._id,
+        });
       }
 
       // create a new Order in the database

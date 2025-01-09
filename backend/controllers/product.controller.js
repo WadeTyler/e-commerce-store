@@ -122,7 +122,7 @@ export const getProductsByCategory = async (req, res) => {
     const category = req.params.category;
     const products = await Product.find({ category });
 
-    return res.status(200).json( products );
+    return res.status(200).json({products});
   } catch (error) {
     console.error("Error in getProductsByCategory: ", error);
     return res.status(500).json({ message: "Server Error" });
