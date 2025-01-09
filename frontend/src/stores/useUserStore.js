@@ -61,19 +61,19 @@ export const useUserStore = create((set, get) => ({
   },
 
   refreshToken: async () => {
-    if (get().checkingAuth) return;
+		// Prevent multiple simultaneous refresh attempts
+		if (get().checkingAuth) return;
 
-    set({ checkingAuth: true });
-    try {
-      const res = await axios.post("/auth/refresh-token");
-      return res.data;
-    } catch (error) {
-      set({ user: null });
-      throw error;
-    } finally {
-      set({ checkingAuth: false });
-    }
-  },
+		set({ checkingAuth: true });
+		try {
+			const response = await axios.post("/auth/refresh-token");
+			set({ checkingAuth: false });
+			return response.data;
+		} catch (error) {
+			set({ user: null, checkingAuth: false });
+			throw error;
+		}
+	},
 
   
 }));
@@ -84,7 +84,7 @@ export const useUserStore = create((set, get) => ({
 let refreshPromise = null;
 
 axios.interceptors.response.use(
-  (resopnse) => response,
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
